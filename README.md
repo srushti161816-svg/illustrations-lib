@@ -1,36 +1,25 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# illustrations-lib
 
-## Getting Started
+A Next.js app that showcases Hairline line illustrations: isometric, single-stroke figures that answer the pointer.
 
-First, run the development server:
+## Layout
+
+- `illustrations/hardware/*.js`: figure sources (hardware: `device`, `stack`, `platform`, `rack`)
+- `illustrations/ui/*.js`: figure sources (interface pieces: `apps`, `toggle`, `keys`)
+- `public/illustrations/hairline-*.html`: the built, self-contained pages
+- `src/app/page.tsx`: the showcase page, one frame per figure
+
+## Rebuilding a figure
+
+Figures are built with the `hairline-create` skill. After editing a source:
+
+```bash
+node ~/.claude/skills/hairline-create/build.mjs illustrations/hardware/device.js public/illustrations/hairline-device.html
+node ~/.claude/skills/hairline-create/validate.mjs public/illustrations/hairline-device.html
+```
+
+## Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
