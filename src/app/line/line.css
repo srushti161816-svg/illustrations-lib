@@ -1,0 +1,454 @@
+/*
+ * Motion for the Line library. Every loop is predetermined, so it runs as a CSS animation, off the main thread
+ * where the browser can; the 3D figures, which CSS cannot rotate, draw in wireframe.tsx instead.
+ *
+ * Curves: strong ease-out for entering, ease-in-out sine for anything that oscillates (it is the shape of a
+ * sine, so a dot riding a wave stays on it), ease-in quad for depth (things speed up as they come closer),
+ * and linear for constant rotation.
+ */
+
+.ln-tile {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-sine: cubic-bezier(0.37, 0, 0.63, 1);
+  --ease-in-quad: cubic-bezier(0.11, 0, 0.5, 0);
+  --tile: #151517;
+
+  position: relative;
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  background: var(--tile);
+  color: #ececee;
+  transition: background-color 200ms ease;
+  animation: ln-tile-in 500ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 30ms);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ln-tile:hover {
+    background: #19191c;
+  }
+}
+
+.ln-tile figcaption {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: #6b6b72;
+}
+
+.ln-art {
+  width: 74%;
+  overflow: visible;
+}
+
+/* Figures are drawn on a 200 by 200 board; every transform-origin below is a point on it. */
+.ln-art * {
+  transform-box: view-box;
+}
+
+/* Nothing moves while its tile is off screen, and a draw-in waits until the tile is first seen. */
+.ln-tile:not([data-active]) * {
+  animation-play-state: paused;
+}
+
+.ln-dim {
+  stroke-opacity: 0.45;
+}
+
+.ln-faint {
+  stroke-opacity: 0.25;
+}
+
+/* A stroke that keeps its hairline width while its element is scaled down. */
+.ln-hair {
+  vector-effect: non-scaling-stroke;
+}
+
+.ln-dot {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* ---------- Entering ---------- */
+
+@keyframes ln-tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* A stroke drawn from its start to its end, once, when its tile is first seen. Needs pathLength="1". */
+.ln-draw-in {
+  stroke-dasharray: 1;
+  animation: ln-draw-in 1600ms var(--ease-out) both;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes ln-draw-in {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* A dot that pops in once its strokes are drawn. */
+.ln-pop-in {
+  animation: ln-pop-in 400ms var(--ease-out) both;
+  animation-delay: var(--d, 0ms);
+  transform-origin: var(--o);
+}
+
+@keyframes ln-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+/* ---------- Rotation ---------- */
+
+.ln-spin {
+  animation: ln-spin var(--dur, 30s) linear infinite;
+  transform-origin: var(--o, 100px 100px);
+}
+
+.ln-reverse {
+  animation-direction: reverse;
+}
+
+@keyframes ln-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* ---------- Venn ---------- */
+
+.ln-drift-right,
+.ln-drift-left {
+  animation: ln-drift 3600ms var(--ease-sine) infinite alternate;
+}
+
+.ln-drift-left {
+  --x: -9px;
+}
+
+.ln-drift-right {
+  --x: 9px;
+}
+
+@keyframes ln-drift {
+  to {
+    transform: translateX(var(--x));
+  }
+}
+
+/* Hatching that slides through the overlap by one gap per cycle, so the loop has no seam. */
+.ln-hatch {
+  stroke-opacity: 0.7;
+  animation: ln-hatch 1800ms linear infinite;
+}
+
+@keyframes ln-hatch {
+  to {
+    transform: translateX(6px);
+  }
+}
+
+/* ---------- Nested circles ---------- */
+
+/* Each circle shrinks toward the point all of them touch, inner one first, so a ripple runs outward. */
+.ln-ripple {
+  animation: ln-ripple 3200ms var(--ease-sine) infinite;
+  transform-origin: 100px 170px;
+}
+
+@keyframes ln-ripple {
+  50% {
+    transform: scale(0.88);
+  }
+}
+
+/* ---------- Light cone ---------- */
+
+/* Wavefronts leave the apex and widen to the rims at constant speed: the cone is what they trace. */
+.ln-cone-up,
+.ln-cone-down {
+  stroke-opacity: 0.7;
+  animation: ln-cone-up 5500ms linear infinite;
+  transform-origin: var(--o);
+}
+
+.ln-cone-down {
+  animation-name: ln-cone-down;
+}
+
+@keyframes ln-cone-up {
+  from {
+    transform: translateY(56px) scale(0.04);
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes ln-cone-down {
+  from {
+    transform: translateY(-56px) scale(0.04);
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+}
+
+/* ---------- Golden spiral ---------- */
+
+.ln-spiral {
+  stroke-dasharray: 1;
+  animation: ln-spiral 7s var(--ease-in-out) infinite;
+}
+
+@keyframes ln-spiral {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  55%,
+  85% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+/* ---------- Sine wave ---------- */
+
+/* The wave moves one period per cycle; the dot on the axis rises and falls half a period each way. */
+.ln-wave-scroll {
+  animation: ln-wave-scroll 3s linear infinite;
+}
+
+@keyframes ln-wave-scroll {
+  to {
+    transform: translateX(60px);
+  }
+}
+
+.ln-wave-dot {
+  animation: ln-wave-dot 1500ms var(--ease-sine) infinite alternate;
+}
+
+@keyframes ln-wave-dot {
+  from {
+    transform: translateY(-28px);
+  }
+  to {
+    transform: translateY(28px);
+  }
+}
+
+/* ---------- Tunnel ---------- */
+
+.ln-tunnel {
+  animation: ln-tunnel 6s var(--ease-in-quad) infinite;
+  transform-origin: 100px 100px;
+}
+
+@keyframes ln-tunnel {
+  from {
+    transform: scale(0.1333);
+    opacity: 0;
+  }
+  25%,
+  88% {
+    opacity: 1;
+  }
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* ---------- Polar sweep ---------- */
+
+/* A blip lights when the sweep crosses it, then fades; its delay is the sweep's time to reach it. */
+.ln-blip {
+  opacity: 0;
+  animation: ln-blip 5s var(--ease-out) infinite;
+  transform-origin: var(--o);
+}
+
+@keyframes ln-blip {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  70%,
+  to {
+    opacity: 0;
+    transform: scale(var(--grow, 1));
+  }
+}
+
+/* ---------- Molecule, virus ---------- */
+
+.ln-pulse {
+  animation: ln-pulse 3s var(--ease-sine) infinite;
+  animation-delay: var(--d, 0ms);
+  transform-origin: var(--o);
+}
+
+@keyframes ln-pulse {
+  0%,
+  40%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  20% {
+    transform: scale(1.9);
+    opacity: 0.6;
+  }
+}
+
+.ln-twinkle {
+  animation: ln-twinkle 2400ms var(--ease-sine) infinite;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes ln-twinkle {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* ---------- Distributions ---------- */
+
+/* The narrow curve flattens as the wide one rises; each peak dot rides its curve's peak. */
+.ln-tall,
+.ln-wide,
+.ln-tall-peak,
+.ln-wide-peak {
+  animation: ln-tall 4s var(--ease-sine) infinite alternate;
+}
+
+.ln-tall {
+  transform-origin: 100px 160px;
+}
+
+.ln-wide {
+  animation-name: ln-wide;
+  transform-origin: 112px 160px;
+}
+
+.ln-tall-peak {
+  animation-name: ln-tall-peak;
+}
+
+.ln-wide-peak {
+  animation-name: ln-wide-peak;
+}
+
+@keyframes ln-tall {
+  to {
+    transform: scaleY(0.55);
+  }
+}
+
+@keyframes ln-wide {
+  to {
+    transform: scaleY(1.5);
+  }
+}
+
+@keyframes ln-tall-peak {
+  to {
+    transform: translateY(49.5px);
+  }
+}
+
+@keyframes ln-wide-peak {
+  to {
+    transform: translateY(-25px);
+  }
+}
+
+/* ---------- Test tubes ---------- */
+
+.ln-bob {
+  animation: ln-bob var(--dur, 2600ms) var(--ease-sine) infinite alternate;
+}
+
+@keyframes ln-bob {
+  to {
+    transform: translateY(-5px);
+  }
+}
+
+.ln-bubble {
+  animation: ln-bubble var(--dur, 2400ms) linear infinite;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes ln-bubble {
+  from {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(calc(var(--rise) * -1px));
+    opacity: 0;
+  }
+}
+
+/*
+ * Reduced motion: no loop moves, and strokes are simply there. Every looping element carries an inline
+ * transform for its rest pose, so the figure still composes when it stands still. Tiles fade in, without the rise.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .ln-tile {
+    animation-name: ln-tile-fade;
+  }
+
+  .ln-tile * {
+    animation: none !important;
+  }
+
+  .ln-draw-in,
+  .ln-spiral {
+    stroke-dasharray: none;
+  }
+}
+
+@keyframes ln-tile-fade {
+  from {
+    opacity: 0;
+  }
+}

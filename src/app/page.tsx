@@ -13,10 +13,16 @@ const figures = [
 
 export default function Home() {
   return (
-    <main className="mx-auto grid w-full max-w-6xl flex-1 grid-cols-1 content-center items-start gap-6 px-4 py-12 lg:grid-cols-3">
-      {figures.map((figure) => (
-        <Figure key={figure.src} src={`${figure.src}?theme=light`} title={figure.title} action={figure.action} />
-      ))}
+    <main className="mx-auto w-full max-w-7xl min-w-0 flex-1 px-4 py-10 md:px-10">
+      <header className="mb-8 flex flex-col gap-1">
+        <h1 className="text-lg font-medium tracking-tight text-neutral-900">Hairline</h1>
+        <p className="text-sm text-neutral-500">Isometric figures in a single stroke that answer the pointer. Click one to open it.</p>
+      </header>
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+        {figures.map((figure) => (
+          <Figure key={figure.src} src={`${figure.src}?theme=light`} title={figure.title} action={figure.action} />
+        ))}
+      </div>
     </main>
   );
 }
